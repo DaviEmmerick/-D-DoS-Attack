@@ -83,3 +83,5 @@ flask --app flask_controller run --port 5000
 -> Adicionar um dashboard simples ao Flask (talvez com WebSockets) para mostrar o status do ataque em tempo real.
 
 -> Dockerizar as aplicações (Flask e FastAPI) usando docker-compose para facilitar a execução.
+
+-> Inserir um template para deixar visual a requisição 
