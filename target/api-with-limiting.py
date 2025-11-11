@@ -37,3 +37,5 @@ async def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExc
 if __name__ == "__main__":
 
     uvicorn.run(app, host="0.0.0.0", port=8002)
+
+# run: uvicorn api-unprotected:app --port 8002
