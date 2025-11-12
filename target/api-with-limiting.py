@@ -4,7 +4,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import uvicorn
-import time
+import asyncio
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -18,10 +18,10 @@ TEN_PER_MINUTE = "10/minute"
 @app.get("/api/data")
 @limiter.limit(TEN_PER_MINUTE) 
 async def get_data_protected(request: Request):
-    try:
-        time.sleep(0.01) 
-    except Exception as e:
-        print(f"Erro no sleep: {e}")
+    #try:
+    #    await asyncio.sleep(0.01) 
+    #except Exception as e:
+    #    print(f"Erro no sleep: {e}")
         
     return {"message": "API (Protegida) está funcionando!"}
 
