@@ -14,19 +14,39 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 TEN_PER_MINUTE = "10/minute"
+ip_counts = {}      # Conta quantas vezes o IP bateu no servidor
+banned_ips = set()  # Lista de IPs bloqueados
+BLOCK_LIMIT = 50
 
 @app.get("/api/data")
 @limiter.limit(TEN_PER_MINUTE) 
 async def get_data_protected(request: Request):
-    #try:
-    #    await asyncio.sleep(0.01) 
-    #except Exception as e:
-    #    print(f"Erro no sleep: {e}")
+    client_ip = request.client.host
+
+    if client_ip in banned_ips:
+        return JSONResponse(status_code=403, content={"detail": "IP BANIDO PERMANENTEMENTE."})
+    
+    ip_counts[client_ip] = ip_counts.get(client_ip, 0) + 1
+
+    if ip_counts[client_ip] > BLOCK_LIMIT:
+        banned_ips.add(client_ip)
+        return JSONResponse(status_code=403, content={"detail": "Limite de segurança excedido. IP Banido."})
         
     return {"message": "API (Protegida) está funcionando!"}
 
 @app.exception_handler(RateLimitExceeded)
 async def custom_rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    client_ip = request.client.host
+
+    if client_ip in banned_ips:
+        return JSONResponse(status_code=403, content={"detail": "IP BANIDO PERMANENTEMENTE."})
+
+    ip_counts[client_ip] = ip_counts.get(client_ip, 0) + 1
+
+    if ip_counts[client_ip] > BLOCK_LIMIT:
+        banned_ips.add(client_ip)
+        print(f"[FIREWALL] IP {client_ip} banido por insistência no Rate Limit.")
+        return JSONResponse(status_code=403, content={"detail": "Limite de segurança excedido. IP Banido."})
 
     print(f"Rate limit excedido para {request.client.host}")
     return JSONResponse(
